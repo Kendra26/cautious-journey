@@ -1,0 +1,59 @@
+name: Torrent Download & Upload to Pixeldrain
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  torrent-upload:
+    runs-on: ubuntu-latest
+    env:
+      PIXELDRAIN_API_KEY: '8ec6f000-e8d1-403d-820b-4324a6a68869'  # Replace with your actual API key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt install transmission-cli aria2 -y
+          # Download link extraction script (if needed)
+          curl -s https://textdoc.co/5xvG5PnuTb838mhsX | grep -oP 'magnet:\S+|https?://\S+\.(mp4|mkv|avi|srt|rar)' > links.txt
+
+      - name: Add torrents to Transmission
+        run: |
+          # Read links and add each to transmission
+          while IFS= read -r link; do
+            transmission-cli -w ./downloaded_files "$link" &
+          done < links.txt
+          wait
+
+      - name: Wait for all torrents to finish downloading
+        run: |
+          echo "Waiting for torrents to complete..."
+          while true; do
+            # Count active torrents
+            ACTIVE=$(transmission-remote -l | grep 'Idle\|Stopped\|Seeding' | wc -l)
+            # Count total torrents
+            TOTAL=$(transmission-remote -l | wc -l)
+            # If all are completed (not active), break
+            if [ "$ACTIVE" -eq "$TOTAL" ]; then
+              echo "All downloads completed."
+              break
+            fi
+            sleep 30
+          done
+
+      - name: Stop transmission-daemon (if running as daemon)
+        run: |
+          transmission-remote --stop
+          
+      - name: Upload all downloaded files (recursive)
+        run: |
+          find ./downloaded_files -type f \( -iname "*.avi" -o -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.srt" \) -print0 | while IFS= read -r -d '' file; do
+            curl -g -X POST "https://upload.gofile.io/uploadfile" \
+              -H "Authorization: Bearer sjjsjsjsjs" \
+              -F "file=@\"$file\"" \
+              -F "folderId=552163bc-ab90-445d-8069-b1429ab8c9a1"
+          done
