@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: clipmaster-pro
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: BASEROW_URL
+        value: https://api.baserow.io
+      - key: BASEROW_TABLE_ID
+        sync: false
+      - key: BASEROW_TOKEN
+        sync: false
