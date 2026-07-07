@@ -33,7 +33,7 @@ app.get('/api/baserow', async (req, res) => {
   const { base, tableId, token } = getConfig();
   if (!tableId || !token) return res.status(500).json({ error: 'Server is missing BASEROW_TABLE_ID or BASEROW_TOKEN environment variables.' });
   try {
-    const r = await fetch(`${base}/api/database/rows/table/${tableId}/?user_field_names=true&order_by=id&size=200`, { headers: headersFor(token) });
+    const r = await fetch(`${base}/api/database/rows/table/${tableId}/?user_field_names=true&size=200`, { headers: headersFor(token) });
     const data = await r.json();
     res.status(r.status).json(data);
   } catch (err) {
