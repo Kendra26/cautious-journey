@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo apt update && sudo apt install transmission-cli aria2 -y
           # Download link extraction script (if needed)
-          curl -s https://textdoc.co/5xvG5PnuTb838mhsXj | grep -oP 'magnet:\S+|https?://\S+\.(mp4|mkv|avi|srt|rar)' > links.txt
+          curl -s https://textdoc.co/c/T0xdtFt7W5IGxyv36FwN | grep -oP 'magnet:\S+|https?://\S+\.(mp4|mkv|avi|srt|rar)' > links.txt
 
       - name: Add torrents to Transmission
         run: |
