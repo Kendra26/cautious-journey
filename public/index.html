@@ -7,104 +7,178 @@
 <meta name="description" content="Paste, auto-segment, and sync clipboard snippets to the cloud. A fast scratchpad for your workflow." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
 <style>
-  body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif; }
-  ::selection { background: #e0e7ff; }
+  /* ---------------------------------------------------------------
+     "Pony Skies" theme — dawn-gradient sky, cloud-white cards,
+     scrapbook stickers, and slow-drifting ambient floaters.
+     Palette: orchid mane (primary), sky-blue (secondary), meadow
+     mint, cutie-mark gold, bubblegum rose, and warm plum ink.
+  --------------------------------------------------------------- */
+  body { font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  .font-display { font-family: 'Baloo 2', ui-rounded, 'Segoe UI Rounded', system-ui, sans-serif; }
+  ::selection { background: #f3d9ff; }
   .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pony-floater {
+    pointer-events: none;
+    position: absolute;
+    user-select: none;
+    will-change: transform;
+    animation: pony-drift 10s ease-in-out infinite;
+  }
+  .pony-floater-slow { animation-duration: 16s; }
+  .pony-floater-twinkle { animation: pony-twinkle 4s ease-in-out infinite; }
+  @keyframes pony-drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(10px, -18px) rotate(6deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+  @keyframes pony-twinkle {
+    0%, 100% { opacity: 0.35; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pony-floater, .pony-floater-slow, .pony-floater-twinkle { animation: none !important; }
+  }
 </style>
 </head>
-<body class="min-h-screen bg-[#f8fafc] p-4 md:p-10 pb-24 text-slate-900">
+<body class="min-h-screen bg-[#f3eeff] p-4 md:p-10 pb-24 text-[#402c55]">
 
 <div id="top">
+
+  <!-- Pony Skies ambient decoration: drifting clouds, stars, sparkles, rainbow -->
+  <div aria-hidden="true" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="pony-floater pony-floater-slow" style="top:6%; left:8%; opacity:0.5; animation-duration:15s;">
+      <i data-lucide="cloud" style="width:46px; height:46px; color:#8FC9EA;"></i>
+    </div>
+    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:14%; left:78%; opacity:0.45; animation-duration:18s; animation-delay:2s;">
+      <i data-lucide="cloud" style="width:60px; height:60px; color:#8FC9EA;"></i>
+    </div>
+    <div class="pony-floater pony-floater-slow" style="top:70%; left:4%; opacity:0.4; animation-duration:14s; animation-delay:1s;">
+      <i data-lucide="cloud" style="width:38px; height:38px; color:#8FC9EA;"></i>
+    </div>
+    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:84%; left:85%; opacity:0.45; animation-duration:17s; animation-delay:3s;">
+      <i data-lucide="cloud" style="width:50px; height:50px; color:#8FC9EA;"></i>
+    </div>
+    <div class="pony-floater" style="top:24%; left:18%; animation-delay:0.4s;">
+      <i data-lucide="star" class="pony-floater-twinkle" style="width:18px; height:18px; color:#FFC24B;"></i>
+    </div>
+    <div class="pony-floater" style="top:40%; left:92%; animation-delay:1.2s;">
+      <i data-lucide="star" class="pony-floater-twinkle" style="width:14px; height:14px; color:#FF7FB4;"></i>
+    </div>
+    <div class="pony-floater" style="top:90%; left:40%; animation-delay:0.8s;">
+      <i data-lucide="star" class="pony-floater-twinkle" style="width:16px; height:16px; color:#B85FCC;"></i>
+    </div>
+    <div class="pony-floater" style="top:10%; left:48%; animation-delay:0.6s;">
+      <i data-lucide="sparkles" class="pony-floater-twinkle" style="width:20px; height:20px; color:#B85FCC;"></i>
+    </div>
+    <div class="pony-floater hidden sm:block" style="top:56%; left:10%; animation-delay:1.6s;">
+      <i data-lucide="sparkles" class="pony-floater-twinkle" style="width:16px; height:16px; color:#4FB6E0;"></i>
+    </div>
+    <div class="pony-floater pony-floater-slow" style="top:30%; left:4%; opacity:0.5; animation-delay:0.5s;">
+      <svg viewBox="0 0 64 40" width="40" height="24" fill="none" aria-hidden="true">
+        <path d="M4 38a28 28 0 0 1 56 0" stroke="#FF7FB4" stroke-width="6" stroke-linecap="round" />
+        <path d="M12 38a20 20 0 0 1 40 0" stroke="#FFC24B" stroke-width="6" stroke-linecap="round" />
+        <path d="M20 38a12 12 0 0 1 24 0" stroke="#4FB6E0" stroke-width="6" stroke-linecap="round" />
+      </svg>
+    </div>
+  </div>
 
   <!-- Floating scroll nav -->
   <div class="fixed bottom-6 right-4 md:right-8 flex flex-col gap-2 z-40 opacity-40 hover:opacity-100 transition-opacity duration-300">
     <button onclick="scrollToId('top')" title="Jump to Top"
-      class="p-3 bg-slate-900 text-white rounded-full shadow-lg hover:bg-slate-800 flex items-center justify-center">
+      class="p-3 bg-[#402c55] text-white rounded-full shadow-lg hover:bg-[#54366e] flex items-center justify-center">
       <i data-lucide="arrow-up" class="w-5 h-5"></i>
     </button>
     <button onclick="scrollToId('bottom')" title="Jump to Bottom"
-      class="p-3 bg-slate-900 text-white rounded-full shadow-lg hover:bg-slate-800 flex items-center justify-center">
+      class="p-3 bg-[#402c55] text-white rounded-full shadow-lg hover:bg-[#54366e] flex items-center justify-center">
       <i data-lucide="arrow-down" class="w-5 h-5"></i>
     </button>
   </div>
 
   <!-- Cloud Configuration Sidebar -->
   <div id="cloudPanel"
-    class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-slate-200 transform translate-x-full transition-transform duration-300 ease-in-out z-50 p-6 flex flex-col gap-4">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+    class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-[#e4d6f7] transform translate-x-full transition-transform duration-300 ease-in-out z-50 p-6 flex flex-col gap-4">
+    <div class="flex items-center justify-between border-b border-[#efe6fb] pb-4">
       <div class="flex items-center gap-2">
-        <i data-lucide="database" class="w-5 h-5 text-indigo-600"></i>
-        <h3 class="font-bold text-slate-900">Cloud Sync</h3>
+        <i data-lucide="database" class="w-5 h-5 text-[#b85fcc]"></i>
+        <h3 class="font-display font-bold text-[#402c55]">Cloud Sync</h3>
       </div>
-      <button onclick="setPanelOpen(false)" class="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600">
+      <button onclick="setPanelOpen(false)" class="p-1 hover:bg-[#f3eeff] rounded-lg text-[#7c6892] hover:text-[#402c55]">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
     <div class="flex flex-col gap-3 text-sm flex-grow overflow-y-auto">
-      <p class="text-slate-500 leading-relaxed">
+      <p class="text-[#7c6892] leading-relaxed">
         Segments sync to Baserow through this app's own <span class="font-mono text-xs">/api/baserow</span> function —
         your Baserow token stays on the server and never touches the browser.
       </p>
 
-      <div id="connStatus" class="text-xs font-semibold px-3 py-2 rounded-xl border bg-slate-50 border-slate-200 text-slate-500">
+      <div id="connStatus" class="text-xs font-semibold px-3 py-2 rounded-xl border bg-[#f3eeff] border-[#e4d6f7] text-[#7c6892]">
         Checking connection…
       </div>
 
-      <p class="text-[11px] text-slate-400 leading-relaxed">
+      <p class="text-[11px] text-[#a698ba] leading-relaxed">
         Configured via <span class="font-mono">BASEROW_URL</span>, <span class="font-mono">BASEROW_TABLE_ID</span> and
         <span class="font-mono">BASEROW_TOKEN</span> environment variables in your Vercel project settings.
         Table needs two text fields: <span class="font-mono">label</span> and <span class="font-mono">content</span>.
       </p>
 
-      <div class="mt-2 pt-2 border-t border-slate-100">
+      <div class="mt-2 pt-2 border-t border-[#efe6fb]">
         <label class="flex items-center gap-3 cursor-pointer group">
           <input type="checkbox" id="autoSyncToggle" checked
-            class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500" />
-          <span class="font-medium text-slate-600 group-hover:text-slate-900 select-none">Enable Auto-Sync</span>
+            class="w-4 h-4 text-[#b85fcc] border-[#e4d6f7] rounded focus:ring-[#b85fcc]" />
+          <span class="font-medium text-[#7c6892] group-hover:text-[#402c55] select-none">Enable Auto-Sync</span>
         </label>
-        <p class="text-[11px] text-slate-400 ml-7 mt-0.5">Saves segments automatically when typing pauses.</p>
+        <p class="text-[11px] text-[#a698ba] ml-7 mt-0.5">Saves segments automatically when typing pauses.</p>
       </div>
       <button onclick="syncToCloud()"
-        class="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2">
+        class="mt-4 w-full py-3 bg-[#b85fcc] hover:bg-[#a44db8] text-white rounded-xl font-semibold flex items-center justify-center gap-2">
         <i data-lucide="cloud-upload" class="w-4 h-4"></i>
         Sync Now
       </button>
     </div>
   </div>
 
-  <main class="max-w-7xl mx-auto flex flex-col gap-8">
+  <main class="relative z-10 max-w-7xl mx-auto flex flex-col gap-8">
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 class="text-4xl font-bold tracking-tighter text-slate-950">
-          ClipMaster <span class="text-indigo-600">Pro</span>
-        </h1>
-        <p class="text-slate-500 font-medium mt-1">Smart cloud-only segmenting for your workflow.</p>
+      <div class="flex items-center gap-3">
+        <svg viewBox="0 0 48 48" fill="none" class="w-10 h-10 text-[#b85fcc] shrink-0" aria-hidden="true">
+          <path d="M14 30c-3.5-2-5-6-4-10 1-4.4 4.6-7.7 9-8.4 1-3 4-5.1 7.2-4.6 2.7.4 4.8 2.4 5.5 5 3.6.3 6.6 3 7.2 6.6.6 3.7-1.2 7.2-4.4 8.9v6.2c0 1.8-1.5 3.3-3.3 3.3H18.3c-1.8 0-3.3-1.5-3.3-3.3V30Z" fill="currentColor"/>
+          <path d="M31 12c2.6 1 4.6 3 5.6 5.6-2.8-.6-5.6-.2-8-1.4.4-1.6 1.3-3 2.4-4.2Z" fill="currentColor" opacity="0.55"/>
+          <circle cx="26" cy="21" r="1.6" fill="white"/>
+        </svg>
+        <div>
+          <h1 class="font-display text-4xl font-bold tracking-tight text-[#402c55]">
+            ClipMaster <span class="text-[#b85fcc]">Pro</span>
+          </h1>
+          <p class="text-[#7c6892] font-medium mt-1">Smart cloud-only segmenting for your workflow.</p>
+        </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="setPanelOpen(true)"
-          class="flex items-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-semibold shadow-sm">
-          <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
+          class="flex items-center gap-2 px-4 py-3 bg-white border border-[#e4d6f7] text-[#7c6892] rounded-2xl font-semibold shadow-sm">
+          <i data-lucide="database" class="w-4 h-4 text-[#a698ba]"></i>
           Cloud Options
         </button>
         <button onclick="copyClean()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-indigo-100 text-indigo-700 rounded-2xl font-semibold">
+          class="flex items-center gap-2.5 px-6 py-3 bg-[#f3eeff] text-[#8a3ea3] rounded-2xl font-semibold">
           <i data-lucide="zap" class="w-4 h-4"></i>
           Copy Clean
         </button>
         <button onclick="copyCleanSpaced()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-indigo-100 text-indigo-700 rounded-2xl font-semibold">
+          class="flex items-center gap-2.5 px-6 py-3 bg-[#f3eeff] text-[#8a3ea3] rounded-2xl font-semibold">
           <i data-lucide="align-justify" class="w-4 h-4"></i>
           Copy Clean (1 space)
         </button>
         <button onclick="copyAll()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-slate-950 text-white rounded-2xl font-semibold">
+          class="flex items-center gap-2.5 px-6 py-3 bg-[#402c55] text-white rounded-2xl font-semibold">
           <i data-lucide="copy" class="w-4 h-4"></i>
           Copy All Content
         </button>
@@ -118,41 +192,41 @@
         <div class="flex items-center gap-2 overflow-x-auto pb-1">
           <div id="tabStrip" class="flex items-center gap-2 flex-1 overflow-x-auto"></div>
           <button onclick="addTab()" title="New paste"
-            class="shrink-0 p-2 bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 rounded-xl">
+            class="shrink-0 p-2 bg-white border border-[#e4d6f7] text-[#7c6892] hover:text-[#b85fcc] hover:border-[#c9a3e0] rounded-xl">
             <i data-lucide="plus" class="w-4 h-4"></i>
           </button>
         </div>
 
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
-            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Master Input</label>
-            <button onclick="scrollEditor('top')" class="p-1 text-slate-400 hover:text-indigo-600 rounded">
+            <label class="font-display text-[10px] font-bold uppercase tracking-widest text-[#a698ba]">Master Input</label>
+            <button onclick="scrollEditor('top')" class="p-1 text-[#a698ba] hover:text-[#b85fcc] rounded">
               <i data-lucide="arrow-up-to-line" class="w-3 h-3"></i>
             </button>
-            <button onclick="scrollEditor('bottom')" class="p-1 text-slate-400 hover:text-indigo-600 rounded">
+            <button onclick="scrollEditor('bottom')" class="p-1 text-[#a698ba] hover:text-[#b85fcc] rounded">
               <i data-lucide="arrow-down-to-line" class="w-3 h-3"></i>
             </button>
           </div>
-          <span id="charCount" class="text-[10px] font-mono text-slate-400">0 characters</span>
+          <span id="charCount" class="text-[10px] font-mono text-[#a698ba]">0 characters</span>
         </div>
 
-        <div id="editorLoading" class="w-full h-[55vh] bg-white border border-slate-200 rounded-3xl flex-col items-center justify-center text-slate-400 gap-2 shadow-sm hidden">
-          <i data-lucide="loader-2" class="w-8 h-8 spin text-indigo-600"></i>
+        <div id="editorLoading" class="w-full h-[55vh] bg-white border border-[#e4d6f7] rounded-3xl flex-col items-center justify-center text-[#a698ba] gap-2 shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] hidden">
+          <i data-lucide="loader-2" class="w-8 h-8 spin text-[#b85fcc]"></i>
           <p class="text-sm font-medium mt-2">Fetching from cloud database...</p>
         </div>
 
         <textarea id="editor"
-          class="w-full h-[55vh] p-8 bg-white border border-slate-200 rounded-3xl outline-none transition-all duration-300 font-mono text-sm text-slate-700 placeholder:text-slate-300 resize-none shadow-sm focus:shadow-[0_0_0_4px_rgba(99,102,241,0.15)]"
+          class="w-full h-[55vh] p-8 bg-white border border-[#e4d6f7] rounded-3xl outline-none transition-all duration-300 font-mono text-sm text-[#402c55] placeholder:text-[#d4c3ea] resize-none shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] focus:shadow-[0_0_0_4px_rgba(184,95,204,0.18)]"
           placeholder="Paste items here to auto-index them..." oninput="onEditorChange(event)"></textarea>
       </section>
 
       <section class="flex flex-col gap-3">
-        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Segmented Library</label>
+        <label class="font-display text-[10px] font-bold uppercase tracking-widest text-[#a698ba]">Segmented Library</label>
         <div id="library" class="flex flex-col gap-4 h-[55vh] overflow-y-auto pr-2"></div>
       </section>
     </div>
 
-    <footer id="bottom" class="flex justify-between items-center border-t border-slate-200 pt-6">
+    <footer id="bottom" class="flex justify-between items-center border-t border-[#e4d6f7] pt-6">
       <div id="statusPill"
         class="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-500 border opacity-0 translate-y-2 border-transparent">
         <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -160,7 +234,7 @@
       </div>
 
       <button onclick="clearAll()"
-        class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+        class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#a698ba] hover:text-[#e8577a] hover:bg-[#fdeef1] rounded-xl transition-all">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
         Clear Everything
       </button>
@@ -241,10 +315,10 @@ async function checkConnection() {
   try {
     await apiList();
     connStatus.textContent = 'Connected to Baserow ✓';
-    connStatus.className = 'text-xs font-semibold px-3 py-2 rounded-xl border bg-emerald-50 border-emerald-100 text-emerald-700';
+    connStatus.className = 'text-xs font-semibold px-3 py-2 rounded-xl border bg-[#e9fbf4] border-[#c3f0dd] text-[#1f7a5c]';
   } catch (err) {
     connStatus.textContent = `Not connected: ${err.message}`;
-    connStatus.className = 'text-xs font-semibold px-3 py-2 rounded-xl border bg-rose-50 border-rose-100 text-rose-700';
+    connStatus.className = 'text-xs font-semibold px-3 py-2 rounded-xl border bg-[#fdeef1] border-[#f9d2dd] text-[#c23a5b]';
   }
 }
 
@@ -255,13 +329,13 @@ function showStatus(msg, type) {
   const msgEl = document.getElementById('statusMsg');
   msgEl.textContent = msg;
   pill.classList.remove('opacity-0', 'translate-y-2', 'border-transparent',
-    'bg-emerald-50', 'text-emerald-700', 'border-emerald-100',
-    'bg-rose-50', 'text-rose-700', 'border-rose-100',
-    'bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+    'bg-[#e9fbf4]', 'text-[#1f7a5c]', 'border-[#c3f0dd]',
+    'bg-[#fdeef1]', 'text-[#c23a5b]', 'border-[#f9d2dd]',
+    'bg-[#f3eeff]', 'text-[#8a3ea3]', 'border-[#e4d6f7]');
   pill.classList.add('opacity-100', 'translate-y-0');
-  if (type === 'success') pill.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
-  else if (type === 'error') pill.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-100');
-  else pill.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+  if (type === 'success') pill.classList.add('bg-[#e9fbf4]', 'text-[#1f7a5c]', 'border-[#c3f0dd]');
+  else if (type === 'error') pill.classList.add('bg-[#fdeef1]', 'text-[#c23a5b]', 'border-[#f9d2dd]');
+  else pill.classList.add('bg-[#f3eeff]', 'text-[#8a3ea3]', 'border-[#e4d6f7]');
 
   if (statusTimer) clearTimeout(statusTimer);
   statusTimer = setTimeout(() => {
@@ -293,7 +367,7 @@ function renderTabs() {
   tabs.forEach(t => {
     const wrap = document.createElement('div');
     wrap.className = `flex items-center gap-1 shrink-0 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer transition-colors ${
-      t.id === activeTabId ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
+      t.id === activeTabId ? 'bg-[#f3eeff] border-[#c9a3e0] text-[#8a3ea3]' : 'bg-white border-[#e4d6f7] text-[#7c6892] hover:border-[#c9a3e0] hover:text-[#b85fcc]'
     }`;
     wrap.onclick = () => selectTab(t.id);
     wrap.ondblclick = (e) => { e.stopPropagation(); renameTab(t.id); };
@@ -306,7 +380,7 @@ function renderTabs() {
     const renameBtn = document.createElement('button');
     renameBtn.innerHTML = '<i data-lucide="pencil" class="w-3 h-3"></i>';
     renameBtn.title = 'Rename';
-    renameBtn.className = 'ml-1 text-slate-300 hover:text-indigo-600';
+    renameBtn.className = 'ml-1 text-[#d4c3ea] hover:text-[#b85fcc]';
     renameBtn.onclick = (e) => { e.stopPropagation(); renameTab(t.id); };
     wrap.appendChild(renameBtn);
 
@@ -314,7 +388,7 @@ function renderTabs() {
       const closeBtn = document.createElement('button');
       closeBtn.innerHTML = '<i data-lucide="x" class="w-3 h-3"></i>';
       closeBtn.title = 'Delete';
-      closeBtn.className = 'text-slate-300 hover:text-red-500';
+      closeBtn.className = 'text-[#d4c3ea] hover:text-[#e8577a]';
       closeBtn.onclick = (e) => { e.stopPropagation(); removeTab(t.id); };
       wrap.appendChild(closeBtn);
     }
@@ -526,8 +600,8 @@ function renderLibrary(content) {
 
   if (isLoading) {
     library.innerHTML = `
-      <div class="m-auto text-center p-8 text-slate-400">
-        <i data-lucide="loader-2" class="w-6 h-6 spin mx-auto mb-2 text-slate-300"></i>
+      <div class="m-auto text-center p-8 text-[#a698ba]">
+        <i data-lucide="loader-2" class="w-6 h-6 spin mx-auto mb-2 text-[#d4c3ea]"></i>
         <p class="text-xs">Parsing layout...</p>
       </div>`;
     icons();
@@ -536,7 +610,7 @@ function renderLibrary(content) {
 
   if (fragments.length === 0) {
     library.innerHTML = `
-      <div class="m-auto text-center p-8 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400">
+      <div class="m-auto text-center p-8 border-2 border-dashed border-[#e4d6f7] rounded-3xl text-[#a698ba]">
         <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 opacity-30"></i>
         <p class="text-sm">No segments detected yet.</p>
       </div>`;
@@ -547,15 +621,15 @@ function renderLibrary(content) {
   fragments.forEach((f, i) => {
     const card = document.createElement('div');
     card.id = `seg-${i}`;
-    card.className = 'bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col';
+    card.className = 'bg-white p-5 rounded-2xl border border-[#efe6fb] shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] hover:shadow-[0_14px_34px_-10px_rgba(184,95,204,0.32)] transition-all flex flex-col';
 
     const navRow = document.createElement('div');
-    navRow.className = 'flex gap-2 overflow-x-auto pb-3 w-full border-b border-slate-100 mb-3 pr-2';
+    navRow.className = 'flex gap-2 overflow-x-auto pb-3 w-full border-b border-[#efe6fb] mb-3 pr-2';
     fragments.forEach((_, j) => {
       const b = document.createElement('button');
       b.textContent = j + 1;
       b.className = `px-3 py-1 bg-white border rounded-lg text-xs font-bold shrink-0 transition-colors ${
-        j === i ? 'border-indigo-300 text-indigo-600' : 'border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
+        j === i ? 'border-[#c9a3e0] text-[#b85fcc]' : 'border-[#e4d6f7] text-[#7c6892] hover:border-[#c9a3e0] hover:text-[#b85fcc]'
       }`;
       b.onclick = () => scrollToId(`seg-${j}`);
       navRow.appendChild(b);
@@ -566,7 +640,7 @@ function renderLibrary(content) {
     head.id = `copy-head-${i}`;
     head.className = 'flex justify-between items-center mb-3';
     head.innerHTML = `
-      <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Segment ${i + 1}</span>
+      <span class="text-[10px] font-bold text-[#d4c3ea] uppercase tracking-widest">Segment ${i + 1}</span>
       <div class="flex gap-1 items-center" id="head-actions-${i}"></div>
     `;
     card.appendChild(head);
@@ -574,43 +648,43 @@ function renderLibrary(content) {
     const actions = head.querySelector(`#head-actions-${i}`);
 
     const downBtn = document.createElement('button');
-    downBtn.className = 'p-1.5 hover:bg-slate-100 text-slate-400 rounded-lg';
+    downBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
     downBtn.innerHTML = '<i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5"></i>';
     downBtn.onclick = () => scrollToId(`seg-foot-${i}`);
     actions.appendChild(downBtn);
 
     const copyBtn = document.createElement('button');
-    copyBtn.className = 'p-1.5 hover:bg-indigo-50 hover:text-indigo-600 text-slate-400 rounded-lg';
+    copyBtn.className = 'p-1.5 hover:bg-[#f3eeff] hover:text-[#b85fcc] text-[#a698ba] rounded-lg';
     copyBtn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i>';
     copyBtn.onclick = () => copyFragment(f);
     actions.appendChild(copyBtn);
 
     if (i > 0) {
       const upBtn = document.createElement('button');
-      upBtn.className = 'p-1.5 hover:bg-slate-100 text-slate-400 rounded-lg';
+      upBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
       upBtn.innerHTML = '<i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>';
       upBtn.onclick = () => scrollToId(`seg-${i - 1}`);
       actions.appendChild(upBtn);
     }
     if (i < fragments.length - 1) {
       const nextBtn = document.createElement('button');
-      nextBtn.className = 'p-1.5 hover:bg-slate-100 text-slate-400 rounded-lg';
+      nextBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
       nextBtn.innerHTML = '<i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>';
       nextBtn.onclick = () => scrollToId(`seg-${i + 1}`);
       actions.appendChild(nextBtn);
     }
 
     const pre = document.createElement('pre');
-    pre.className = 'text-xs text-slate-600 font-mono break-words whitespace-pre-wrap flex-grow';
+    pre.className = 'text-xs text-[#5b4a71] font-mono break-words whitespace-pre-wrap flex-grow';
     pre.textContent = f;
     card.appendChild(pre);
 
     const foot = document.createElement('div');
     foot.id = `seg-foot-${i}`;
-    foot.className = 'mt-4 pt-3 border-t border-slate-50 flex justify-between items-center';
-    foot.innerHTML = `<span class="text-[9px] text-slate-300 uppercase tracking-widest">End of Seg ${i + 1}</span>`;
+    foot.className = 'mt-4 pt-3 border-t border-[#f3eeff] flex justify-between items-center';
+    foot.innerHTML = `<span class="text-[9px] text-[#d4c3ea] uppercase tracking-widest">End of Seg ${i + 1}</span>`;
     const jumpBtn = document.createElement('button');
-    jumpBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg';
+    jumpBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#a698ba] hover:text-[#b85fcc] hover:bg-[#f3eeff] rounded-lg';
     jumpBtn.innerHTML = '<i data-lucide="arrow-up-to-line" class="w-3.5 h-3.5"></i> Jump to Copy';
     jumpBtn.onclick = () => scrollToId(`copy-head-${i}`);
     foot.appendChild(jumpBtn);
