@@ -7,7 +7,7 @@
 <meta name="description" content="Paste, auto-segment, and sync clipboard snippets to the cloud. A fast scratchpad for your workflow." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -21,6 +21,7 @@
   --------------------------------------------------------------- */
   body { font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, sans-serif; }
   .font-display { font-family: 'Baloo 2', ui-rounded, 'Segoe UI Rounded', system-ui, sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace; }
   ::selection { background: #f3d9ff; }
   .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -43,8 +44,49 @@
     0%, 100% { opacity: 0.35; transform: scale(0.9); }
     50% { opacity: 1; transform: scale(1.15); }
   }
+  @keyframes pony-bounce-in {
+    0% { transform: scale(0.85) translateY(6px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .pony-pop-in { animation: pony-bounce-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+  /* Scrapbook sticker badge: circular, rotated, thick paper edge */
+  .pony-sticker {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 3px solid white;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08), 0 8px 14px rgba(64,44,85,0.18);
+    transition: transform 0.25s ease;
+  }
+  .pony-sticker:hover { transform: scale(1.08) rotate(0deg) !important; }
+
+  /* Washi-tape strip across the top of a card */
+  .washi-tape {
+    position: absolute;
+    top: -0.75rem;
+    left: 50%;
+    height: 1.5rem;
+    width: 5rem;
+    border-radius: 0.125rem;
+    opacity: 0.9;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    transform: translateX(-50%) rotate(-3deg);
+  }
+
+  /* Soft cloud card */
+  .cloud-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid rgba(228,214,247,0.7);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px -12px rgba(184,95,204,0.25);
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .pony-floater, .pony-floater-slow, .pony-floater-twinkle { animation: none !important; }
+    .pony-floater, .pony-floater-slow, .pony-floater-twinkle, .pony-pop-in { animation: none !important; }
   }
 </style>
 </head>
@@ -54,16 +96,16 @@
 
   <!-- Pony Skies ambient decoration: drifting clouds, stars, sparkles, rainbow -->
   <div aria-hidden="true" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-    <div class="pony-floater pony-floater-slow" style="top:6%; left:8%; opacity:0.5; animation-duration:15s;">
+    <div class="pony-floater pony-floater-slow" style="top:6%; left:8%; opacity:0.55; animation-duration:15s;">
       <i data-lucide="cloud" style="width:46px; height:46px; color:#8FC9EA;"></i>
     </div>
-    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:14%; left:78%; opacity:0.45; animation-duration:18s; animation-delay:2s;">
+    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:14%; left:78%; opacity:0.5; animation-duration:18s; animation-delay:2s;">
       <i data-lucide="cloud" style="width:60px; height:60px; color:#8FC9EA;"></i>
     </div>
-    <div class="pony-floater pony-floater-slow" style="top:70%; left:4%; opacity:0.4; animation-duration:14s; animation-delay:1s;">
+    <div class="pony-floater pony-floater-slow" style="top:68%; left:4%; opacity:0.45; animation-duration:14s; animation-delay:1s;">
       <i data-lucide="cloud" style="width:38px; height:38px; color:#8FC9EA;"></i>
     </div>
-    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:84%; left:85%; opacity:0.45; animation-duration:17s; animation-delay:3s;">
+    <div class="pony-floater pony-floater-slow hidden sm:block" style="top:82%; left:85%; opacity:0.5; animation-duration:17s; animation-delay:3s;">
       <i data-lucide="cloud" style="width:50px; height:50px; color:#8FC9EA;"></i>
     </div>
     <div class="pony-floater" style="top:24%; left:18%; animation-delay:0.4s;">
@@ -72,13 +114,13 @@
     <div class="pony-floater" style="top:40%; left:92%; animation-delay:1.2s;">
       <i data-lucide="star" class="pony-floater-twinkle" style="width:14px; height:14px; color:#FF7FB4;"></i>
     </div>
-    <div class="pony-floater" style="top:90%; left:40%; animation-delay:0.8s;">
+    <div class="pony-floater" style="top:88%; left:40%; animation-delay:0.8s;">
       <i data-lucide="star" class="pony-floater-twinkle" style="width:16px; height:16px; color:#B85FCC;"></i>
     </div>
     <div class="pony-floater" style="top:10%; left:48%; animation-delay:0.6s;">
       <i data-lucide="sparkles" class="pony-floater-twinkle" style="width:20px; height:20px; color:#B85FCC;"></i>
     </div>
-    <div class="pony-floater hidden sm:block" style="top:56%; left:10%; animation-delay:1.6s;">
+    <div class="pony-floater hidden sm:block" style="top:55%; left:10%; animation-delay:1.6s;">
       <i data-lucide="sparkles" class="pony-floater-twinkle" style="width:16px; height:16px; color:#4FB6E0;"></i>
     </div>
     <div class="pony-floater pony-floater-slow" style="top:30%; left:4%; opacity:0.5; animation-delay:0.5s;">
@@ -91,26 +133,30 @@
   </div>
 
   <!-- Floating scroll nav -->
-  <div class="fixed bottom-6 right-4 md:right-8 flex flex-col gap-2 z-40 opacity-40 hover:opacity-100 transition-opacity duration-300">
+  <div class="fixed bottom-6 right-4 md:right-8 flex flex-col gap-2 z-40">
     <button onclick="scrollToId('top')" title="Jump to Top"
-      class="p-3 bg-[#402c55] text-white rounded-full shadow-lg hover:bg-[#54366e] flex items-center justify-center">
+      class="p-3 bg-gradient-to-br from-[#b85fcc] to-[#4fb6e0] text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center active:scale-90 transition-transform">
       <i data-lucide="arrow-up" class="w-5 h-5"></i>
     </button>
     <button onclick="scrollToId('bottom')" title="Jump to Bottom"
-      class="p-3 bg-[#402c55] text-white rounded-full shadow-lg hover:bg-[#54366e] flex items-center justify-center">
+      class="p-3 bg-gradient-to-br from-[#4fb6e0] to-[#b85fcc] text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center active:scale-90 transition-transform">
       <i data-lucide="arrow-down" class="w-5 h-5"></i>
     </button>
   </div>
 
-  <!-- Cloud Configuration Sidebar -->
+  <!-- Cloud Configuration Sidebar (bottom sheet on mobile, side panel on desktop) -->
   <div id="cloudPanel"
-    class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-[#e4d6f7] transform translate-x-full transition-transform duration-300 ease-in-out z-50 p-6 flex flex-col gap-4">
+    class="fixed z-50 bg-white shadow-2xl border-[#e4d6f7] transition-transform duration-300 ease-in-out
+      inset-x-0 bottom-0 rounded-t-[2rem] border-t p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto
+      sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:h-full sm:w-96 sm:max-h-none sm:rounded-t-none sm:rounded-l-[2rem] sm:border-t-0 sm:border-l
+      translate-y-full sm:translate-y-0 sm:translate-x-full">
+    <div class="sm:hidden mx-auto h-1.5 w-12 rounded-full bg-[#e4d6f7]"></div>
     <div class="flex items-center justify-between border-b border-[#efe6fb] pb-4">
       <div class="flex items-center gap-2">
-        <i data-lucide="database" class="w-5 h-5 text-[#b85fcc]"></i>
-        <h3 class="font-display font-bold text-[#402c55]">Cloud Sync</h3>
+        <i data-lucide="cloud" class="w-5 h-5 text-[#b85fcc]"></i>
+        <h3 class="font-display font-bold text-[#402c55] text-lg">Cloud Sync</h3>
       </div>
-      <button onclick="setPanelOpen(false)" class="p-1 hover:bg-[#f3eeff] rounded-lg text-[#7c6892] hover:text-[#402c55]">
+      <button onclick="setPanelOpen(false)" class="p-1.5 hover:bg-[#f3eeff] rounded-full text-[#7c6892] hover:text-[#402c55]">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
@@ -126,66 +172,92 @@
 
       <p class="text-[11px] text-[#a698ba] leading-relaxed">
         Configured via <span class="font-mono">BASEROW_URL</span>, <span class="font-mono">BASEROW_TABLE_ID</span> and
-        <span class="font-mono">BASEROW_TOKEN</span> environment variables in your Vercel project settings.
+        <span class="font-mono">BASEROW_TOKEN</span> environment variables in your Render service settings.
         Table needs two text fields: <span class="font-mono">label</span> and <span class="font-mono">content</span>.
       </p>
 
-      <div class="mt-2 pt-2 border-t border-[#efe6fb]">
+      <div class="mt-2 pt-4 border-t border-[#efe6fb]">
         <label class="flex items-center gap-3 cursor-pointer group">
           <input type="checkbox" id="autoSyncToggle" checked
-            class="w-4 h-4 text-[#b85fcc] border-[#e4d6f7] rounded focus:ring-[#b85fcc]" />
-          <span class="font-medium text-[#7c6892] group-hover:text-[#402c55] select-none">Enable Auto-Sync</span>
+            class="w-4 h-4 accent-[#b85fcc] rounded focus:ring-[#b85fcc]" />
+          <span class="font-semibold text-[#7c6892] group-hover:text-[#402c55] select-none">Enable Auto-Sync</span>
         </label>
         <p class="text-[11px] text-[#a698ba] ml-7 mt-0.5">Saves segments automatically when typing pauses.</p>
       </div>
       <button onclick="syncToCloud()"
-        class="mt-4 w-full py-3 bg-[#b85fcc] hover:bg-[#a44db8] text-white rounded-xl font-semibold flex items-center justify-center gap-2">
+        class="mt-4 w-full py-3 bg-gradient-to-r from-[#b85fcc] to-[#ff7fb4] hover:brightness-105 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-transform">
         <i data-lucide="cloud-upload" class="w-4 h-4"></i>
         Sync Now
       </button>
     </div>
   </div>
+  <div id="panelBackdrop" onclick="setPanelOpen(false)" class="fixed inset-0 z-40 bg-[#402c55]/20 backdrop-blur-[1px] sm:hidden hidden"></div>
 
-  <main class="relative z-10 max-w-7xl mx-auto flex flex-col gap-8">
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div class="flex items-center gap-3">
-        <svg viewBox="0 0 48 48" fill="none" class="w-10 h-10 text-[#b85fcc] shrink-0" aria-hidden="true">
-          <path d="M14 30c-3.5-2-5-6-4-10 1-4.4 4.6-7.7 9-8.4 1-3 4-5.1 7.2-4.6 2.7.4 4.8 2.4 5.5 5 3.6.3 6.6 3 7.2 6.6.6 3.7-1.2 7.2-4.4 8.9v6.2c0 1.8-1.5 3.3-3.3 3.3H18.3c-1.8 0-3.3-1.5-3.3-3.3V30Z" fill="currentColor"/>
-          <path d="M31 12c2.6 1 4.6 3 5.6 5.6-2.8-.6-5.6-.2-8-1.4.4-1.6 1.3-3 2.4-4.2Z" fill="currentColor" opacity="0.55"/>
-          <circle cx="26" cy="21" r="1.6" fill="white"/>
+  <main class="relative z-10 max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
+
+    <!-- Header -->
+    <header class="relative rounded-[2rem] border border-[#e4d6f7]/70 bg-white/70 backdrop-blur-sm p-5 sm:p-8 shadow-[0_20px_45px_-20px_rgba(184,95,204,0.35)] flex flex-col gap-5">
+
+      <!-- Stickers -->
+      <div class="pony-sticker pony-pop-in -top-4 -left-3 sm:-top-5 sm:-left-5" style="width:44px;height:44px;background:linear-gradient(145deg,#FFDA82,#FFB020);color:#5B3B00;transform:rotate(-14deg);">
+        <i data-lucide="star" style="width:22px;height:22px;" fill="#5B3B00"></i>
+      </div>
+      <div class="pony-sticker pony-pop-in -top-5 -right-4 hidden sm:flex" style="width:56px;height:56px;background:linear-gradient(145deg,#FFFFFF,#F1E6FF);color:#402C55;transform:rotate(8deg);">
+        <svg viewBox="0 0 64 40" class="w-[70%] h-[70%]" fill="none" aria-hidden="true">
+          <path d="M4 38a28 28 0 0 1 56 0" stroke="#FF7FB4" stroke-width="6" stroke-linecap="round" />
+          <path d="M12 38a20 20 0 0 1 40 0" stroke="#FFC24B" stroke-width="6" stroke-linecap="round" />
+          <path d="M20 38a12 12 0 0 1 24 0" stroke="#4FB6E0" stroke-width="6" stroke-linecap="round" />
         </svg>
-        <div>
-          <h1 class="font-display text-4xl font-bold tracking-tight text-[#402c55]">
-            ClipMaster <span class="text-[#b85fcc]">Pro</span>
-          </h1>
-          <p class="text-[#7c6892] font-medium mt-1">Smart cloud-only segmenting for your workflow.</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="shrink-0 grid place-items-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#b85fcc] to-[#ff7fb4] text-white shadow-md">
+            <svg viewBox="0 0 48 48" fill="none" class="w-7 h-7 sm:w-8 sm:h-8" aria-hidden="true">
+              <path d="M14 30c-3.5-2-5-6-4-10 1-4.4 4.6-7.7 9-8.4 1-3 4-5.1 7.2-4.6 2.7.4 4.8 2.4 5.5 5 3.6.3 6.6 3 7.2 6.6.6 3.7-1.2 7.2-4.4 8.9v6.2c0 1.8-1.5 3.3-3.3 3.3H18.3c-1.8 0-3.3-1.5-3.3-3.3V30Z" fill="currentColor"/>
+              <path d="M31 12c2.6 1 4.6 3 5.6 5.6-2.8-.6-5.6-.2-8-1.4.4-1.6 1.3-3 2.4-4.2Z" fill="currentColor" opacity="0.55"/>
+              <circle cx="26" cy="21" r="1.6" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#402c55]">
+              ClipMaster <span class="text-[#b85fcc]">Pro</span>
+            </h1>
+            <p class="text-[#7c6892] font-medium mt-0.5 text-xs sm:text-base">Smart cloud-sync scrapbook for your clipboard.</p>
+          </div>
         </div>
       </div>
+
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="setPanelOpen(true)"
-          class="flex items-center gap-2 px-4 py-3 bg-white border border-[#e4d6f7] text-[#7c6892] rounded-2xl font-semibold shadow-sm">
-          <i data-lucide="database" class="w-4 h-4 text-[#a698ba]"></i>
+          class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 whitespace-nowrap bg-white border border-[#e4d6f7] text-[#7c6892] shadow-sm">
+          <i data-lucide="cloud" class="w-4 h-4 text-[#4fb6e0]"></i>
           Cloud Options
         </button>
         <button onclick="copyClean()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-[#f3eeff] text-[#8a3ea3] rounded-2xl font-semibold">
+          class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 whitespace-nowrap bg-[#b85fcc]/10 text-[#b85fcc]">
           <i data-lucide="zap" class="w-4 h-4"></i>
           Copy Clean
         </button>
         <button onclick="copyCleanSpaced()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-[#f3eeff] text-[#8a3ea3] rounded-2xl font-semibold">
+          class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 whitespace-nowrap bg-[#4fb6e0]/15 text-[#0f3140]">
           <i data-lucide="align-justify" class="w-4 h-4"></i>
           Copy Clean (1 space)
         </button>
+        <button onclick="copyCleanNoNewlines()"
+          class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 whitespace-nowrap bg-[#3fcf9e]/15 text-[#06301f]">
+          <i data-lucide="minus" class="w-4 h-4"></i>
+          Copy Clean (no newlines)
+        </button>
         <button onclick="copyAll()"
-          class="flex items-center gap-2.5 px-6 py-3 bg-[#402c55] text-white rounded-2xl font-semibold">
+          class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 whitespace-nowrap bg-gradient-to-r from-[#b85fcc] to-[#ff7fb4] text-white shadow-md">
           <i data-lucide="copy" class="w-4 h-4"></i>
           Copy All Content
         </button>
       </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 h-auto">
       <section class="lg:col-span-2 flex flex-col gap-3">
 
         <!-- Paste tabs -->
@@ -199,34 +271,34 @@
 
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
-            <label class="font-display text-[10px] font-bold uppercase tracking-widest text-[#a698ba]">Master Input</label>
-            <button onclick="scrollEditor('top')" class="p-1 text-[#a698ba] hover:text-[#b85fcc] rounded">
+            <label class="text-[10px] font-bold uppercase tracking-widest text-[#7c6892]">Master Input</label>
+            <button onclick="scrollEditor('top')" class="p-1 text-[#7c6892] hover:text-[#b85fcc] rounded">
               <i data-lucide="arrow-up-to-line" class="w-3 h-3"></i>
             </button>
-            <button onclick="scrollEditor('bottom')" class="p-1 text-[#a698ba] hover:text-[#b85fcc] rounded">
+            <button onclick="scrollEditor('bottom')" class="p-1 text-[#7c6892] hover:text-[#b85fcc] rounded">
               <i data-lucide="arrow-down-to-line" class="w-3 h-3"></i>
             </button>
           </div>
-          <span id="charCount" class="text-[10px] font-mono text-[#a698ba]">0 characters</span>
+          <span id="charCount" class="text-[10px] font-mono text-[#7c6892]">0 characters</span>
         </div>
 
-        <div id="editorLoading" class="w-full h-[55vh] bg-white border border-[#e4d6f7] rounded-3xl flex-col items-center justify-center text-[#a698ba] gap-2 shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] hidden">
+        <div id="editorLoading" class="cloud-card w-full h-[50vh] sm:h-[55vh] flex-col items-center justify-center text-[#7c6892] gap-2 hidden">
           <i data-lucide="loader-2" class="w-8 h-8 spin text-[#b85fcc]"></i>
           <p class="text-sm font-medium mt-2">Fetching from cloud database...</p>
         </div>
 
         <textarea id="editor"
-          class="w-full h-[55vh] p-8 bg-white border border-[#e4d6f7] rounded-3xl outline-none transition-all duration-300 font-mono text-sm text-[#402c55] placeholder:text-[#d4c3ea] resize-none shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] focus:shadow-[0_0_0_4px_rgba(184,95,204,0.18)]"
+          class="w-full h-[50vh] sm:h-[55vh] p-5 sm:p-8 bg-white/90 border-2 border-[#e4d6f7] rounded-[1.75rem] outline-none transition-all duration-300 font-mono text-sm text-[#402c55]/90 placeholder:text-[#a698ba]/70 resize-none shadow-sm focus:shadow-[0_0_0_4px_rgba(184,95,204,0.18)] focus:border-[#b85fcc]/50"
           placeholder="Paste items here to auto-index them..." oninput="onEditorChange(event)"></textarea>
       </section>
 
       <section class="flex flex-col gap-3">
-        <label class="font-display text-[10px] font-bold uppercase tracking-widest text-[#a698ba]">Segmented Library</label>
-        <div id="library" class="flex flex-col gap-4 h-[55vh] overflow-y-auto pr-2"></div>
+        <label class="text-[10px] font-bold uppercase tracking-widest text-[#7c6892]">Segmented Library</label>
+        <div id="library" class="flex flex-col gap-5 h-[50vh] sm:h-[55vh] overflow-y-auto pr-1 pt-2"></div>
       </section>
     </div>
 
-    <footer id="bottom" class="flex justify-between items-center border-t border-[#e4d6f7] pt-6">
+    <footer id="bottom" class="flex flex-col sm:flex-row gap-3 justify-between items-center border-t border-[#e4d6f7]/70 pt-6">
       <div id="statusPill"
         class="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-500 border opacity-0 translate-y-2 border-transparent">
         <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -244,7 +316,7 @@
 
 <script>
 /* ---------------------------------------------------------------
-   ClipMaster Pro — Vercel build
+   ClipMaster Pro — Render build
    Backend: this app's own /api/baserow serverless function, which
    proxies to Baserow using server-side env vars (token never ships
    to the browser). Each tab in the UI = one row in your Baserow table.
@@ -256,6 +328,7 @@ let activeTabId = null;
 let autoSync = true;
 let isLoading = true;
 let tempIdCounter = -1;
+let panelOpen = false;
 
 const editor = document.getElementById('editor');
 const editorLoading = document.getElementById('editorLoading');
@@ -264,11 +337,40 @@ const tabStrip = document.getElementById('tabStrip');
 const library = document.getElementById('library');
 const connStatus = document.getElementById('connStatus');
 
+// A soft washi-tape colour per card position, cycling so neighbouring
+// segments never clash.
+const WASHI_COLORS = ['#FFD9EC', '#D9EEFF', '#FFF0C7', '#E1D6FF', '#D3F6E7'];
+
+// Sticker style/order, cycling so nearby cards don't repeat.
+const STICKER_CYCLE = ['star', 'heart', 'sparkle', 'rainbow', 'cloud'];
+const STICKER_STYLE = {
+  star: { bg: 'linear-gradient(145deg,#FFDA82,#FFB020)', fg: '#5B3B00' },
+  heart: { bg: 'linear-gradient(145deg,#FFA9CB,#FF6FA5)', fg: '#5C0F30' },
+  sparkle: { bg: 'linear-gradient(145deg,#D9B3FF,#B85FCC)', fg: '#3B0A4D' },
+  cloud: { bg: 'linear-gradient(145deg,#CFEBFF,#7FCBEE)', fg: '#0E3A4A' },
+  rainbow: { bg: 'linear-gradient(145deg,#FFFFFF,#F1E6FF)', fg: '#402C55' },
+};
+
 let lastValue = '';
 let debounceTimer = null;
 let statusTimer = null;
 
 function icons() { lucide.createIcons(); }
+
+function stickerIconHtml(variant, fg) {
+  if (variant === 'star') return `<i data-lucide="star" style="width:60%;height:60%;" fill="${fg}"></i>`;
+  if (variant === 'heart') return `<i data-lucide="heart" style="width:60%;height:60%;" fill="${fg}"></i>`;
+  if (variant === 'sparkle') return `<i data-lucide="sparkles" style="width:60%;height:60%;"></i>`;
+  if (variant === 'cloud') return `<i data-lucide="cloud" style="width:60%;height:60%;"></i>`;
+  if (variant === 'rainbow') {
+    return `<svg viewBox="0 0 64 40" class="w-[70%] h-[70%]" fill="none" aria-hidden="true">
+      <path d="M4 38a28 28 0 0 1 56 0" stroke="#FF7FB4" stroke-width="6" stroke-linecap="round" />
+      <path d="M12 38a20 20 0 0 1 40 0" stroke="#FFC24B" stroke-width="6" stroke-linecap="round" />
+      <path d="M20 38a12 12 0 0 1 24 0" stroke="#4FB6E0" stroke-width="6" stroke-linecap="round" />
+    </svg>`;
+  }
+  return '';
+}
 
 /* ---------------- API helpers (proxy through /api/baserow) ---------------- */
 
@@ -347,9 +449,19 @@ function showStatus(msg, type) {
 /* ---------------- Panel ---------------- */
 
 function setPanelOpen(open) {
+  panelOpen = open;
   const panel = document.getElementById('cloudPanel');
-  if (open) { checkConnection(); panel.classList.remove('translate-x-full'); }
-  else panel.classList.add('translate-x-full');
+  const backdrop = document.getElementById('panelBackdrop');
+  if (open) {
+    checkConnection();
+    panel.classList.remove('translate-y-full', 'sm:translate-x-full');
+    panel.classList.add('translate-y-0', 'sm:translate-x-0');
+    backdrop.classList.remove('hidden');
+  } else {
+    panel.classList.add('translate-y-full', 'sm:translate-x-full');
+    panel.classList.remove('translate-y-0', 'sm:translate-x-0');
+    backdrop.classList.add('hidden');
+  }
 }
 
 /* ---------------- Tabs ---------------- */
@@ -559,6 +671,16 @@ function copyCleanSpaced() {
   navigator.clipboard.writeText(getFragments(t.content).join('\n\n').trim()).then(() => showStatus('Clean copy (blank line) done!', 'success'));
 }
 
+function copyCleanNoNewlines() {
+  const t = activeTab();
+  const joined = getFragments(t.content)
+    .map(f => f.replace(/\s+/g, ' ').trim())
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  navigator.clipboard.writeText(joined).then(() => showStatus('Clean copy (no newlines) done!', 'success'));
+}
+
 function copyFragment(text) {
   navigator.clipboard.writeText(text).then(() => showStatus('Segment copied!', 'success'));
 }
@@ -600,8 +722,8 @@ function renderLibrary(content) {
 
   if (isLoading) {
     library.innerHTML = `
-      <div class="m-auto text-center p-8 text-[#a698ba]">
-        <i data-lucide="loader-2" class="w-6 h-6 spin mx-auto mb-2 text-[#d4c3ea]"></i>
+      <div class="m-auto text-center p-8 text-[#7c6892]">
+        <i data-lucide="loader-2" class="w-6 h-6 spin mx-auto mb-2 text-[#b85fcc]/60"></i>
         <p class="text-xs">Parsing layout...</p>
       </div>`;
     icons();
@@ -610,8 +732,8 @@ function renderLibrary(content) {
 
   if (fragments.length === 0) {
     library.innerHTML = `
-      <div class="m-auto text-center p-8 border-2 border-dashed border-[#e4d6f7] rounded-3xl text-[#a698ba]">
-        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 opacity-30"></i>
+      <div class="m-auto text-center p-8 border-2 border-dashed border-[#e4d6f7] rounded-[1.75rem] text-[#7c6892]">
+        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 opacity-40 text-[#b85fcc]"></i>
         <p class="text-sm">No segments detected yet.</p>
       </div>`;
     icons();
@@ -621,10 +743,29 @@ function renderLibrary(content) {
   fragments.forEach((f, i) => {
     const card = document.createElement('div');
     card.id = `seg-${i}`;
-    card.className = 'bg-white p-5 rounded-2xl border border-[#efe6fb] shadow-[0_10px_30px_-12px_rgba(184,95,204,0.25)] hover:shadow-[0_14px_34px_-10px_rgba(184,95,204,0.32)] transition-all flex flex-col';
+    card.className = 'cloud-card p-5 pt-6 hover:shadow-[0_16px_36px_-14px_rgba(184,95,204,0.35)] transition-shadow flex flex-col';
+
+    // Washi-tape strip
+    const tape = document.createElement('div');
+    tape.className = 'washi-tape';
+    tape.style.background = WASHI_COLORS[i % WASHI_COLORS.length];
+    card.appendChild(tape);
+
+    // Sticker
+    const variant = STICKER_CYCLE[i % STICKER_CYCLE.length];
+    const { bg, fg } = STICKER_STYLE[variant];
+    const sticker = document.createElement('div');
+    sticker.className = 'pony-sticker pony-pop-in -top-3 -right-3';
+    sticker.style.width = '34px';
+    sticker.style.height = '34px';
+    sticker.style.background = bg;
+    sticker.style.color = fg;
+    sticker.style.transform = `rotate(${i % 2 === 0 ? -12 : 12}deg)`;
+    sticker.innerHTML = stickerIconHtml(variant, fg);
+    card.appendChild(sticker);
 
     const navRow = document.createElement('div');
-    navRow.className = 'flex gap-2 overflow-x-auto pb-3 w-full border-b border-[#efe6fb] mb-3 pr-2';
+    navRow.className = 'flex gap-2 overflow-x-auto pb-3 w-full border-b border-[#e4d6f7]/70 mb-3 pr-2';
     fragments.forEach((_, j) => {
       const b = document.createElement('button');
       b.textContent = j + 1;
@@ -640,7 +781,7 @@ function renderLibrary(content) {
     head.id = `copy-head-${i}`;
     head.className = 'flex justify-between items-center mb-3';
     head.innerHTML = `
-      <span class="text-[10px] font-bold text-[#d4c3ea] uppercase tracking-widest">Segment ${i + 1}</span>
+      <span class="text-[10px] font-bold text-[#7c6892]/70 uppercase tracking-widest">Segment ${i + 1}</span>
       <div class="flex gap-1 items-center" id="head-actions-${i}"></div>
     `;
     card.appendChild(head);
@@ -648,43 +789,43 @@ function renderLibrary(content) {
     const actions = head.querySelector(`#head-actions-${i}`);
 
     const downBtn = document.createElement('button');
-    downBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
+    downBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#7c6892] rounded-lg';
     downBtn.innerHTML = '<i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5"></i>';
     downBtn.onclick = () => scrollToId(`seg-foot-${i}`);
     actions.appendChild(downBtn);
 
     const copyBtn = document.createElement('button');
-    copyBtn.className = 'p-1.5 hover:bg-[#f3eeff] hover:text-[#b85fcc] text-[#a698ba] rounded-lg';
+    copyBtn.className = 'p-1.5 hover:bg-[#b85fcc]/10 hover:text-[#b85fcc] text-[#7c6892] rounded-lg';
     copyBtn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i>';
     copyBtn.onclick = () => copyFragment(f);
     actions.appendChild(copyBtn);
 
     if (i > 0) {
       const upBtn = document.createElement('button');
-      upBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
+      upBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#7c6892] rounded-lg';
       upBtn.innerHTML = '<i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>';
       upBtn.onclick = () => scrollToId(`seg-${i - 1}`);
       actions.appendChild(upBtn);
     }
     if (i < fragments.length - 1) {
       const nextBtn = document.createElement('button');
-      nextBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#a698ba] rounded-lg';
+      nextBtn.className = 'p-1.5 hover:bg-[#f3eeff] text-[#7c6892] rounded-lg';
       nextBtn.innerHTML = '<i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>';
       nextBtn.onclick = () => scrollToId(`seg-${i + 1}`);
       actions.appendChild(nextBtn);
     }
 
     const pre = document.createElement('pre');
-    pre.className = 'text-xs text-[#5b4a71] font-mono break-words whitespace-pre-wrap flex-grow';
+    pre.className = 'text-xs text-[#402c55]/80 font-mono break-words whitespace-pre-wrap flex-grow';
     pre.textContent = f;
     card.appendChild(pre);
 
     const foot = document.createElement('div');
     foot.id = `seg-foot-${i}`;
     foot.className = 'mt-4 pt-3 border-t border-[#f3eeff] flex justify-between items-center';
-    foot.innerHTML = `<span class="text-[9px] text-[#d4c3ea] uppercase tracking-widest">End of Seg ${i + 1}</span>`;
+    foot.innerHTML = `<span class="text-[9px] text-[#a698ba] uppercase tracking-widest">End of Seg ${i + 1}</span>`;
     const jumpBtn = document.createElement('button');
-    jumpBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#a698ba] hover:text-[#b85fcc] hover:bg-[#f3eeff] rounded-lg';
+    jumpBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#7c6892] hover:text-[#b85fcc] hover:bg-[#b85fcc]/10 rounded-lg';
     jumpBtn.innerHTML = '<i data-lucide="arrow-up-to-line" class="w-3.5 h-3.5"></i> Jump to Copy';
     jumpBtn.onclick = () => scrollToId(`copy-head-${i}`);
     foot.appendChild(jumpBtn);
